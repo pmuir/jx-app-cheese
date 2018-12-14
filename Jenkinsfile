@@ -24,6 +24,8 @@ pipeline {
           dir ('/home/jenkins/go/src/github.com/jenkins-x-apps/jx-app-cheese') {
             checkout scm
             sh "make build"
+             sh 'export VERSION=$PREVIEW_VERSION && skaffold build -f skaffold.yaml'
+             sh "jx step post build --image $DOCKER_REGISTRY/$ORG/$APP_NAME:$PREVIEW_VERSION"
           }
         }
       }
@@ -52,6 +54,9 @@ pipeline {
           }
           dir ('/home/jenkins/go/src/github.com/jenkins-x-apps/jx-app-cheese') {
             sh "make build"
+            sh 'export VERSION=`cat VERSION` && skaffold build -f skaffold.yaml'
+
+            sh "jx step post build --image $DOCKER_REGISTRY/$ORG/$APP_NAME:\$(cat VERSION)"
           }
         }
       }
@@ -62,11 +67,12 @@ pipeline {
         steps {
           dir ('/home/jenkins/go/src/github.com/jenkins-x-apps/jx-app-cheese/charts/jx-app-cheese') {
             sh 'jx step changelog --version v\$(cat ../../VERSION)'
-            sh 'make release'
+            // release the helm chart
+            sh 'jx step helm release'
           }
 
           dir ('/home/jenkins/go/src/github.com/jenkins-x-apps/jx-app-cheese') {
-            // release the binary
+            // download go-releaser
             sh 'export GORELEASER_VERSION=0.93.2 && mkdir goreleaser && \
     curl -Lf https://github.com/goreleaser/goreleaser/releases/download/v${GORELEASER_VERSION}/goreleaser_Linux_x86_64.tar.gz | tar -xzv -C ./goreleaser/ && \
     mv goreleaser/goreleaser /usr/bin/ && \

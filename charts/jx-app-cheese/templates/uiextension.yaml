@@ -1,0 +1,19 @@
+apiVersion: cloudbees.com/v1
+kind: UIExtension
+metadata:
+  name: {{ template "fullname" . }}
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+  annotations:
+    {{- if .Values.service.name }}
+    "apps.cloudbees.com/static-content-service": {{ .Values.service.name }}
+    {{- else }}
+    "apps.cloudbees.com/static-content-service": {{ template "fullname" . }}
+    {{- end }}
+spec:
+  {{- if .Values.scripts }}
+  scripts:
+  {{- range .Values.scripts}}
+  - http://<EXPOSED_URL>{{ . }}
+  {{- end }}
+  {{- end}}

@@ -3,3 +3,4 @@ charts/*@tmp/durable-*
 charts/*/*.tgz
 charts/*/templates/release.yaml
 bin/
+.idea
